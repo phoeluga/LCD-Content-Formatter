@@ -1,1 +1,0 @@
-# LCD-Content-Formatter
