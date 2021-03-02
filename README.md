@@ -1,5 +1,12 @@
 # LCD-Content-Formatter
 
+[![Version](https://img.shields.io/badge/version-1.0.2102.1401-brightgreen)](https://github.com/rednoid/LCD-Content-Formatter)
+[![Python Version](https://img.shields.io/badge/python-%3Ev3.7-blue)](https://github.com/rednoid/LCD-Content-Formatter)
+[![Release](https://img.shields.io/badge/release-stable-orange)](https://github.com/rednoid/LCD-Content-Formatter)
+[![GitHubCheck](https://img.shields.io/github/checks-status/rednoid/LCD-Content-Formatter/main)](https://github.com/rednoid/LCD-Content-Formatter)
+[![Issues](https://img.shields.io/github/issues/rednoid/LCD-Content-Formatter)](https://github.com/rednoid/LCD-Content-Formatter)
+[![License](https://img.shields.io/pypi/l/RPLCD.svg)](https://github.com/rednoid/LCD-Content-Formatter)
+
 With this extension you can easily show any text on your LCD without thinking about the text length or amount of rows.
 
 This small library will extend [RPLCD](https://github.com/dbrgn/RPLCD) with the following functions:
@@ -35,7 +42,9 @@ Can be installed via PIP ([https://pypi.org/project/RPLCD](https://pypi.org/proj
 
 The following figure illustrates the concept of this library extension using the example of a 2004 HD44780 LCD display.
 
-![LibConcept](https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/HD44780_Concept.png)
+<p align="center">
+	<img src="/../docu/images/HD44780_Concept.png?raw=true" width="80%"/>
+</p>
 
 ### Frame
 A frame will be used to hold the information to display.
