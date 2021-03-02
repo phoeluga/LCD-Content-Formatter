@@ -7,9 +7,9 @@
 [![Issues](https://img.shields.io/github/issues/rednoid/LCD-Content-Formatter)](https://github.com/rednoid/LCD-Content-Formatter)
 [![License](https://img.shields.io/pypi/l/RPLCD.svg)](https://github.com/rednoid/LCD-Content-Formatter)
 
-With this extension you can easily show any text on your LCD without thinking about the text length or amount of rows.
+With this extension you can easily display any text on your LCD without worrying about the text length or the number of lines. Also it is possible to create a constant prefix and postfix to make data display easy and fast.
 
-This small library will extend [RPLCD](https://github.com/dbrgn/RPLCD) with the following functions:
+This small library extends [RPLCD](https://github.com/dbrgn/RPLCD) with the following functions:
 
 - Scrolling text
 - Pagination
@@ -19,12 +19,12 @@ This small library will extend [RPLCD](https://github.com/dbrgn/RPLCD) with the 
 
 ## Preface
 
-This extension was build due to another project what will implement a usage of a HD44780 LCD.
-The display was used via I2C extender on a Raspberry Pi.
+This extension was created based on another project which implements the use of a HD44780 LCD. The idea was to make it easy to use an LCD without having to take formatting into account.  
+The display was connected to a Raspberry Pi via an I2C extender.
 
 ## Prerequisites
 
-The following prerequisites needs to be met in software and hardware.
+The following requirements must be met in software and hardware.
 
 ### Software
 
@@ -34,42 +34,42 @@ Can be installed via PIP ([https://pypi.org/project/RPLCD](https://pypi.org/proj
 
 ### Hardware
 
-- LCD HD44780 2004 or 1602
+- LCD HD44780 - 2004 or 1602
 - I2C extender for HD44780
-- Raspberry Pi or any other device what is able to control the I2C display in dependence to the needed software prerequisites
+- Raspberry Pi or other device capable of addressing the I2C display, depending on the required software prerequisites
 
 ## Concept
 
-The following figure illustrates the concept of this library extension using the example of a 2004 HD44780 LCD display.
+The following figure illustrates the concept of this library extension using the example of a 2004 HD44780 LCD.
 
 <p align="center">
 	<img src="/../docu/images/HD44780_Concept.png?raw=true" width="80%"/>
 </p>
 
 ### Frame
-A frame will be used to hold the information to display.
-The frame will consists of frame rows. The maximum number of frame rows a frame can show depends on the number the hardware HD44780 display can show. In this sample four.
+A frame is used to hold the information to be displayed.
+The frame consists of frame rows. The maximum number of frame rows that a frame can show depends on the number that the hardware - HD44780 Display - can display. In this example, four.
 
 ### Page
-If more rows then the frame can show exist, the library will manage this in automatically paginate the rows. In the above sample, eight frame rows exist so two pages exist.
+If there are more rows than the frame can display, the library manages this by automatically grouping the rows into pages. In the example above, there are eight frame rows, so two pages.
 
 ### Frame row
-A frame row will contain the actual information and text that is shown on the display. The frame row consists of four parts:
+A frame row contains the actual information and texts that are shown on the display. The frame row consists of four parts:
 
 - **ID**  
-Each frame row will get an own ID were you can simply address them and be able to change the values to your needs.
-The ID can be configured optional. If an ID is not needed for the row, you must not specify one. In this case a random GUID will taken.
+Each frame row gets its own ID, which you can easily address and whose values can be changed according to your needs.
+The ID can be configured optionally. If an ID is not needed for the row, you do not have to specify one. In this case a random GUID will be taken.
 
 - **Prefix**  
-Displays like above mentioned will usually used to show data like sensor values etc. The prefix allowes you keep a constant text like *"Temp."* - for Temperature - in front of your actual value. You then only need to change the temperature value and not the whole line.  
-(This files is optional and must not be used if not needed)
+Displays, like the one above, are often used to show data like sensor values, etc. The prefix allows you to keep a constant text like *"Temp. "* - for temperature - in front of your current value. You then only need to change the temperature value and not the whole line.  
+(This field is optional and need not be used if it is not needed)
 
 - **Text**  
-This is the actual value that you want to show on the display.
+This is the actual value you want to show on the display.
 
 - **Postfix**  
-The postfix allowes you keep a constant text like "*°C"* - for Temperature - right behind of your actual value. You then only need to change the temperature value and not the whole line.  
-(This files is optional and must not be used if not needed)
+The postfix allows you to put a constant text like "*°C "* - for temperature - directly after your current value. You then only need to change the temperature value and not the whole line.  
+(This field is optional and need not be used if it is not needed)
 
 ## Usage
 TODO
