@@ -12,7 +12,7 @@ This small library will extend [RPLCD](https://github.com/dbrgn/RPLCD) with the 
 
 ## Preface
 
-This extension was build due to another project what will implement a usage of a HD44780 LCD display.
+This extension was build due to another project what will implement a usage of a HD44780 LCD.
 The display was used via I2C extender on a Raspberry Pi.
 
 ## Prerequisites
@@ -27,9 +27,9 @@ Can be installed via PIP ([https://pypi.org/project/RPLCD](https://pypi.org/proj
 
 ### Hardware
 
-- LCD display HD44780 2004 or 1602
+- LCD HD44780 2004 or 1602
 - I2C extender for HD44780
-- Raspberry Pi or any other device what is able to control the I2C LCD display in dependence to the needed software prerequisites
+- Raspberry Pi or any other device what is able to control the I2C display in dependence to the needed software prerequisites
 
 ## Concept
 
@@ -62,3 +62,13 @@ This is the actual value that you want to show on the display.
 The postfix allowes you keep a constant text like "*°C"* - for Temperature - right behind of your actual value. You then only need to change the temperature value and not the whole line.  
 (This files is optional and must not be used if not needed)
 
+## Usage
+TODO
+
+## Sample
+TODO
+
+## Changelog
+
+**1.0.2102.1401**  
+Initial release
