@@ -77,7 +77,7 @@ class HD44780(CharLCD):
         return paginationRange
 
 
-    def writeFrame(self, framebuffer, pageNumber=1):
+    def writeFrame(self, framebuffer, pageNumber=1, scrollingFrame = False):
         if self._currentPageNumber != pageNumber:
             super().clear()
         self._currentPageNumber = pageNumber
@@ -87,7 +87,11 @@ class HD44780(CharLCD):
         paginationRange = self._getPaginationRange(framebuffer, pageNumber)
         
         for i in paginationRange:
-            text = list(framebuffer.content.values())[i].prefix + list(framebuffer.content.values())[i].text + list(framebuffer.content.values())[i].postfix
+            # If function is called with a scrolling form, postfix is included in the text
+            if scrollingFrame:
+                text = list(framebuffer.content.values())[i].prefix + list(framebuffer.content.values())[i].text
+            else:
+                text = list(framebuffer.content.values())[i].prefix + list(framebuffer.content.values())[i].text + list(framebuffer.content.values())[i].postfix
             super().write_string(text.ljust(self.lcd.cols)[:self.lcd.cols])
             super().write_string('\r\n')
         
@@ -96,7 +100,7 @@ class HD44780(CharLCD):
             super().write_string(self.lcd.cols * ' ')
             super().write_string('\r\n')
 
-    def scrollFrame(self, framebuffer, scrollIn=False, scrollToBlank=False, delay=0.5, showFirstFrameAfterScroll=True):
+    def scrollFrame(self, framebuffer, scrollIn=False, scrollToBlank=False, scrollIfFit=False, delay=0.5, showFirstFrameAfterScroll=True):
         @dataclass
         class TextPresentation:
             padding: str
@@ -105,8 +109,16 @@ class HD44780(CharLCD):
         framebufferTmp = copy.deepcopy(framebuffer)
         textPresentations = []
         
-        for row in framebuffer.content:
-            if scrollIn:
+        for row in framebuffer.content.values():
+
+            #padding = ''
+
+            #if scrollIn:
+            #    if scrollIfFit and len(row.prefix) + len(row.text) + len(row.postfix) > self.lcd.cols:
+            #        padding = ' ' * (self.lcd.cols - len(row.prefix))
+
+
+            if scrollIn:#len(row.prefix) + len(row.text) + len(row.postfix) > self.lcd.cols):
                 padding = ' ' * (self.lcd.cols - len(row.prefix))
             else:
                 padding = ''
@@ -132,20 +144,27 @@ class HD44780(CharLCD):
             else:
                 for moveCount in range(maxIterations):
                     for frameRow in paginationRange:
+                        spacesLeftInRow = 0
+                        if scrollIfFit:
+                            spacesLeftInRow = len((' ' * (self.lcd.cols - (len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + len(list(framebuffer.content.values())[frameRow].prefix)))))
 
-                        if len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + len(list(framebuffer.content.values())[frameRow].prefix) <= self.lcd.cols:
-                            continue
+                        if scrollToBlank:
+                            if textPresentations[frameRow].pos > (len(textPresentations[frameRow].padding) * (scrollIn + scrollToBlank)) + len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + spacesLeftInRow:
+                                textPresentations[frameRow].pos = 0
+                                list(framebufferTmp.content.values())[frameRow] = copy.deepcopy(list(framebuffer.content.values())[frameRow])
+                        else:
+                            if textPresentations[frameRow].pos > ((len(textPresentations[frameRow].padding) * (scrollIn + scrollToBlank)) + len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + len(list(framebuffer.content.values())[frameRow].prefix)) - self.lcd.cols:
+                                textPresentations[frameRow].pos = 0
+                                list(framebufferTmp.content.values())[frameRow] = copy.deepcopy(list(framebuffer.content.values())[frameRow])
 
-                        if textPresentations[frameRow].pos >= len(textPresentations[frameRow].padding) + len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix):
-                            textPresentations[frameRow].pos = 0
-                            list(framebufferTmp.content.values())[frameRow].text = copy.deepcopy(list(framebuffer.content.values())[frameRow])
-
-                        text = textPresentations[frameRow].padding + list(framebuffer.content.values())[frameRow].text + textPresentations[frameRow].padding
+                        text = textPresentations[frameRow].padding + list(framebuffer.content.values())[frameRow].text + list(framebuffer.content.values())[frameRow].postfix + textPresentations[frameRow].padding + (spacesLeftInRow * ' ')
                         pos = textPresentations[frameRow].pos
                         list(framebufferTmp.content.values())[frameRow].text = text[pos:pos+self.lcd.cols]
-                        textPresentations[frameRow].pos += 1
+                        
+                        if scrollIn:#len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + len(list(framebuffer.content.values())[frameRow].prefix) > self.lcd.cols:
+                            textPresentations[frameRow].pos += 1
 
-                    self.writeFrame(framebufferTmp, pageNumber)
+                    self.writeFrame(framebufferTmp, pageNumber, True)
                     time.sleep(delay)
 
             if not scrollToBlank:
