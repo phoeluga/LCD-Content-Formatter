@@ -72,6 +72,7 @@ The postfix allows you to put a constant text like "*°C "* - for temperature - 
 (This field is optional and need not be used if it is not needed)
 
 ## Usage
+<<<<<<< HEAD
 1. Install the required libraries from Software Prerequisites.
 2. Download this repository and extract it.
 3. Copy the module `HD44780.py` to your project
@@ -155,8 +156,10 @@ You should be able to run it from scratch with just adapting the LCD I2C setting
         This function clears all attributes to an empty string except the `id`
     * <u>`updateFrameRow(frameRow)`</u>  
         This function will update the provided frame row in the parent frame. 
-        
+
+
 ## Changelog
+
 **1.0.2103.0401**  
 Fixed scrolling issue related to the introduction of the `postfix`
 
