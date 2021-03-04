@@ -4,7 +4,7 @@ from RPLCD.i2c import CharLCD
 import copy
 import uuid
 
-version = "1.0.2102.1401"
+version = "1.0.2103.0401"
 
 class HD44780(CharLCD):
     
@@ -19,14 +19,14 @@ class HD44780(CharLCD):
         def __init__(self):
             self.content = dict()
         
-        def add(self, id, text = "", prefix = "", postfix=""):
+        def add(self, id, text="", prefix="", postfix=""):
             if self.content.get(id) is None:
                 tr = self.FrameRow(id, text, prefix, postfix)
                 self.content[id] = tr
                 return tr
             else:
                 raise ValueError("Object with ID '" + id + "' already exist in the frame!")
-        def addWithGuid(self, text, prefix = "", postfix=""):
+        def addWithGuid(self, text, prefix="", postfix=""):
             id = uuid.uuid4()
             if self.content.get(id) is None:
                 tr = self.FrameRow(id, text, prefix, postfix)
@@ -77,7 +77,7 @@ class HD44780(CharLCD):
         return paginationRange
 
 
-    def writeFrame(self, framebuffer, pageNumber=1, scrollingFrame = False):
+    def writeFrame(self, framebuffer, pageNumber=1, scrollingFrame=False):
         if self._currentPageNumber != pageNumber:
             super().clear()
         self._currentPageNumber = pageNumber
