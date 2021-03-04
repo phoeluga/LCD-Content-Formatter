@@ -110,18 +110,10 @@ class HD44780(CharLCD):
         textPresentations = []
         
         for row in framebuffer.content.values():
-
-            #padding = ''
-
-            #if scrollIn:
-            #    if scrollIfFit and len(row.prefix) + len(row.text) + len(row.postfix) > self.lcd.cols:
-            #        padding = ' ' * (self.lcd.cols - len(row.prefix))
-
-
-            if scrollIn:#len(row.prefix) + len(row.text) + len(row.postfix) > self.lcd.cols):
+            padding = ''
+            if (scrollIfFit and scrollIn) or (not scrollIfFit and scrollIn and (len(row.prefix) + len(row.text) + len(row.postfix) > self.lcd.cols)):
                 padding = ' ' * (self.lcd.cols - len(row.prefix))
-            else:
-                padding = ''
+            
             textPresentations.append(TextPresentation(padding, 0))
 
         for pageNumber in range(1, (self._getPagesCount(framebuffer) + 1)):
@@ -149,11 +141,11 @@ class HD44780(CharLCD):
                             spacesLeftInRow = len((' ' * (self.lcd.cols - (len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + len(list(framebuffer.content.values())[frameRow].prefix)))))
 
                         if scrollToBlank:
-                            if textPresentations[frameRow].pos > (len(textPresentations[frameRow].padding) * (scrollIn + scrollToBlank)) + len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + spacesLeftInRow:
+                            if textPresentations[frameRow].pos + spacesLeftInRow > (len(textPresentations[frameRow].padding) * (scrollIn) - scrollIn) + len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + spacesLeftInRow:
                                 textPresentations[frameRow].pos = 0
                                 list(framebufferTmp.content.values())[frameRow] = copy.deepcopy(list(framebuffer.content.values())[frameRow])
                         else:
-                            if textPresentations[frameRow].pos > ((len(textPresentations[frameRow].padding) * (scrollIn + scrollToBlank)) + len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + len(list(framebuffer.content.values())[frameRow].prefix)) - self.lcd.cols:
+                            if textPresentations[frameRow].pos - spacesLeftInRow > ((len(textPresentations[frameRow].padding) * (scrollIn + scrollToBlank)) + len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + len(list(framebuffer.content.values())[frameRow].prefix)) - self.lcd.cols:
                                 textPresentations[frameRow].pos = 0
                                 list(framebufferTmp.content.values())[frameRow] = copy.deepcopy(list(framebuffer.content.values())[frameRow])
 
@@ -161,9 +153,12 @@ class HD44780(CharLCD):
                         pos = textPresentations[frameRow].pos
                         list(framebufferTmp.content.values())[frameRow].text = text[pos:pos+self.lcd.cols]
                         
-                        if scrollIn:#len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + len(list(framebuffer.content.values())[frameRow].prefix) > self.lcd.cols:
+                        if scrollIfFit and (scrollIn or scrollToBlank):
                             textPresentations[frameRow].pos += 1
-
+                        else:
+                            if len(list(framebuffer.content.values())[frameRow].text) + len(list(framebuffer.content.values())[frameRow].postfix) + len(list(framebuffer.content.values())[frameRow].prefix) > self.lcd.cols:
+                                textPresentations[frameRow].pos += 1
+                            
                     self.writeFrame(framebufferTmp, pageNumber, True)
                     time.sleep(delay)
 

@@ -1,70 +1,65 @@
-import os,sys,inspect,time
-import socket
-import fcntl
-import struct
+import os
+import sys
+import inspect
+import time
+from datetime import date, datetime
+
+# Add the parent path to sys.path for the instantiation of HD44780. This is only for the possibility of importing.
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir)
 
+
+##########################################################
+###  Implementation of the actual sample application.  ###
+##########################################################
+# Import the actual extension library
 from HD44780 import HD44780
+# In config.py you can adapt the settings of the display
 import config
+# The logic functions have been outsourced to focus this example on the actual implementation of the HD44780 library.
+import sampleFunctions
 
-from subprocess import PIPE, Popen
+# Helper function to consolidate the calls to change the text in a frame row
+def changeAndUpdateSampleFrameRowText(frameRow, text):
+    frameRow.text = str(text)
+    sampleFrame.updateFrameRow(frameRow)
 
-def getCpuTemperature():
-    file = open("/sys/class/thermal/thermal_zone0/temp", "r")
-    cpuTemperature = file.readline()
-    file.close()
-    return round(int(cpuTemperature)/1000, 1)
-
-def getIpAddress(interface):
-    ip = "UNKNOWN1234567889"
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip = socket.inet_ntoa(fcntl.ioctl(
-            s.fileno(),
-            0x8915,  # SIOCGIFADDR
-            struct.pack('256s', bytes(interface[:15], 'utf-8'))
-        )[20:24])
-    except Exception as e:
-        print(f"Unable to get IP for interface '{interface}' - '{e}'")
-    return ip
-
-
-
+# Instantiation of the extending library
 lcd = HD44780(config.lcdI2cExpanderType, config.lcdI2cAddress, config.lcdColumnCount, config.lcdRowCount)
 
+# Instantiation of a display frame
 sampleFrame = lcd.Frame()
 
+# Instantiation of several frame row and adding to frame
+
+# Sample of adding a frame row with user defined ID "ipEth0"
 sampleFrameRowIpEth0 = sampleFrame.add("ipEth0", "-", "IP eth0: ")
 sampleFrameRowIpWlan0 = sampleFrame.add("ipWifi0", "-", "IP wlan0: ")
-
-
-# Sample of adding a frame row with user defined ID "heatsinktemp"
 sampleFrameRowTemp = sampleFrame.add("cpuTemp", "-", "CPU temp.: ", " °C")
 # Sample of adding a frame row with no user defined ID
-sampleFrameRowCounter = sampleFrame.add("kuchen", "-", "Count: ", " iterations")
+sampleFrameRowCounter = sampleFrame.addWithGuid("-", "Count: ", " iterations")
 
+# Adding more frame rows.
+# In this example we use a 2004 display. This means we can address 4 rows. 
+# By adding these additional rows, pages are automatically created in the
+# background that the library scrolls through when they are shown.
+sampleFrameRowDate = sampleFrame.addWithGuid("-", "Date: ")
+sampleFrameRowTime = sampleFrame.addWithGuid("-", "Time: ")
+sampleFrameRowMoreText = sampleFrame.addWithGuid("Lorem ipsum dolor sit!", "Text: ")
 
-
-counter = 123
+# Loop to change and display the values to be shown on the LCD
 while True:
-    sampleFrameRowIpEth0.text = str(getIpAddress('eth0'))
-    sampleFrame.updateFrameRow(sampleFrameRowIpEth0)
+    changeAndUpdateSampleFrameRowText(sampleFrameRowIpEth0, sampleFunctions.getIpAddress('eth0'))
+    changeAndUpdateSampleFrameRowText(sampleFrameRowIpWlan0, sampleFunctions.getIpAddress('wlan0'))
+    changeAndUpdateSampleFrameRowText(sampleFrameRowTemp, sampleFunctions.getCpuTemperature())
+    changeAndUpdateSampleFrameRowText(sampleFrameRowCounter, config.sampleCounter)
+    changeAndUpdateSampleFrameRowText(sampleFrameRowDate, date.today())
+    changeAndUpdateSampleFrameRowText(sampleFrameRowTime, datetime.now().strftime("%H:%M:%S")) 
 
-    sampleFrameRowIpWlan0.text = str(getIpAddress('wlan0'))
-    sampleFrame.updateFrameRow(sampleFrameRowIpWlan0)
+    # Play around with the three parameters 'scrollIn', 'scrollToBlank' and 'scrollIfFit' to see the different display styles.
+    # The three parameters 'scrollIn', 'scrollToBlank' and 'scrollIfFit' each have the default value 'False' 
+    # and therefore do not have to be specified in the function call.
+    lcd.scrollFrame(sampleFrame, False, False, False)
 
-    sampleFrameRowCounter.text = str(counter)
-    sampleFrame.updateFrameRow(sampleFrameRowCounter)
-
-    sampleFrameRowTemp.text = str(getCpuTemperature())
-    sampleFrame.updateFrameRow(sampleFrameRowTemp)
-
-    sampleFrameRowCounter.text = str(counter)
-    sampleFrame.updateFrameRow(sampleFrameRowCounter)
-
-    lcd.scrollFrame(sampleFrame, True, True, False)
-
-    counter += 1
-    time.sleep(5)
+    config.sampleCounter += 1
