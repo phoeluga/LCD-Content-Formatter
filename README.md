@@ -38,6 +38,12 @@ Can be installed via PIP ([https://pypi.org/project/RPLCD](https://pypi.org/proj
 - I2C extender for HD44780
 - Raspberry Pi or other device capable of addressing the I2C display, depending on the required software prerequisites
 
+The I2C expander can be connected as follows using a Rasbperry Pi as an example:  
+
+<p align="center">
+	<img src="/../docu/images/WiringI2cLcdRasbPi.png?raw=true" width="80%"/>
+</p>
+
 ## Concept
 The following figure illustrates the concept of this library extension using the example of a 2004 HD44780 LCD.
 
