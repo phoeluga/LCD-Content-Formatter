@@ -4,7 +4,7 @@ from RPLCD.i2c import CharLCD
 import copy
 import uuid
 
-version = "1.0.2103.0401"
+version = "1.0.2103.0601"
 
 class HD44780(CharLCD):
     
@@ -121,7 +121,7 @@ class HD44780(CharLCD):
 
             if scrollIn:
                 if scrollToBlank:
-                    maxIterations = max((len(list(framebuffer.content.values())[x].text) + len(list(framebuffer.content.values())[x].postfix) + 1 + (self.lcd.cols - len(list(framebuffer.content.values())[x].prefix))) for x in paginationRange)
+                    maxIterations = max((len(list(framebuffer.content.values())[x].text) + 1 + (self.lcd.cols - len(list(framebuffer.content.values())[x].prefix))) for x in paginationRange)
                 else:
                     maxIterations = max((len(list(framebuffer.content.values())[x].text) + len(list(framebuffer.content.values())[x].postfix) + 1) for x in paginationRange)
             else:
