@@ -22,7 +22,7 @@ The display was connected to a Raspberry Pi via an I2C extender.
 The parent project is used, among other things, to display photovoltaic data. The following demonstrates the result of using this extension module in the parent project.
 
 <p align="center">
-	<img src="/../docu/images/PhotovoltaicSampleLCD.gif?raw=true" width="80%"/>
+	<img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/PhotovoltaicSampleLCD.gif?raw=true" width="80%"/>
 </p>
 
 ## Prerequisites
@@ -41,14 +41,14 @@ Can be installed via PIP ([https://pypi.org/project/RPLCD](https://pypi.org/proj
 The I2C expander can be connected as follows using a Rasbperry Pi as an example:  
 
 <p align="center">
-	<img src="/../docu/images/WiringI2cLcdRasbPi.png?raw=true" width="80%"/>
+	<img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/WiringI2cLcdRasbPi.png?raw=true" width="80%"/>
 </p>
 
 ## Concept
 The following figure illustrates the concept of this library extension using the example of a 2004 HD44780 LCD.
 
 <p align="center">
-	<img src="/../docu/images/HD44780_Concept.png?raw=true" width="80%"/>
+	<img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/HD44780_Concept.png?raw=true" width="80%"/>
 </p>
 
 ### Frame
@@ -107,11 +107,11 @@ Find a detailed sample script in the folder `sample` of this repository.
 You should be able to run it from scratch with just adapting the LCD I2C settings in the `config.py` file.
 
 * Example of a standard scrolling text  
-    <img src="/../docu/images/SampleStandard.gif?raw=true" width="80%"/>
+    <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/SampleStandard.gif?raw=true" width="80%"/>
 * Example of a text scrolling in  
-    <img src="/../docu/images/SampleScrollIn.gif?raw=true" width="80%"/>
+    <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/SampleScrollIn.gif?raw=true" width="80%"/>
 * Example of a text scrolling in and out  
-    <img src="/../docu/images/SampleScrollInScrollOut.gif?raw=true" width="80%"/>
+    <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/SampleScrollInScrollOut.gif?raw=true" width="80%"/>
 
 ## API Reference
 The interfaces for integration in your own code are described below.
