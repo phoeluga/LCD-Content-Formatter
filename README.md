@@ -1,12 +1,12 @@
 # LCD-Content-Formatter
-[![Version](https://img.shields.io/badge/version-1.0.2103.0401-brightgreen)](https://github.com/rednoid/LCD-Content-Formatter)
-[![Python Version](https://img.shields.io/badge/python-%3Ev3.7-blue)](https://github.com/rednoid/LCD-Content-Formatter)
-[![Release](https://img.shields.io/badge/release-stable-orange)](https://github.com/rednoid/LCD-Content-Formatter)
-[![GitHubCheck](https://img.shields.io/github/checks-status/rednoid/LCD-Content-Formatter/main)](https://github.com/rednoid/LCD-Content-Formatter)
-[![Issues](https://img.shields.io/github/issues/rednoid/LCD-Content-Formatter)](https://github.com/rednoid/LCD-Content-Formatter)
-[![License](https://img.shields.io/pypi/l/RPLCD.svg)](https://github.com/rednoid/LCD-Content-Formatter)
+[![Version badge][version-badge]][changelog-link]
+[![Changelog badge][changelog-badge]][changelog-link]
+[![Release badge][release-badge]][repo-link]
+[![Python badge][python-badge]][repo-link]
+[![Issues badge][issues-badge]][issues-link]
+[![License badge][license-badge]][license-link]
 
-With this extension you can easily display any text on your LCD without worrying about the text length or the number of lines. Also it is possible to create a constant prefix and postfix to make data display easy and fast.
+With this extension you can easily display and scroll any text on your LCD without worrying about the text length or the number of lines. Also it is possible to create a constant prefix and postfix to make data display easy and fast.
 
 This small library extends [RPLCD](https://github.com/dbrgn/RPLCD) with the following functions:
 
@@ -190,12 +190,24 @@ The interfaces for integration in your own code are described below.
 
 
 ## Changelog
+All changes to this project are described in the [CHANGELOG.md][changelog-link].
 
-**1.0.2103.0601**  
-Fixed an issue where the maximum iterations were wrong when the test is scrolled in and scrolled to blank.
+## License
+This code is licensed under the license specified in the [LICENSE][license-link] file.
 
-**1.0.2103.0401**  
-Fixed scrolling issue related to the introduction of the `postfix`.
 
-**1.0.2102.1401**  
-Initial release
+[version-badge]: https://img.shields.io/badge/version-1.0.2103.0601-brightgreen
+
+[changelog-link]: ./CHANGELOG.md
+[changelog-badge]: https://img.shields.io/badge/changelog-main-informational
+
+[release-badge]: https://img.shields.io/badge/release-stable-orange
+
+[python-badge]: https://img.shields.io/badge/python-%3E=v3.7-blue
+
+[license-link]: ./LICENSE
+[license-badge]: https://img.shields.io/github/license/rednoid/LCD-Content-Formatter
+
+[repo-link]: https://github.com/rednoid/LCD-Content-Formatter
+[issues-link]: https://github.com/rednoid/LCD-Content-Formatter/issues
+[issues-badge]: https://img.shields.io/github/issues/rednoid/LCD-Content-Formatter
