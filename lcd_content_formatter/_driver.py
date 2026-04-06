@@ -21,9 +21,7 @@ import time
 try:
     from smbus2 import SMBus
 except ImportError as exc:  # pragma: no cover
-    raise ImportError(
-        "smbus2 is required: pip install smbus2"
-    ) from exc
+    raise ImportError("smbus2 is required: pip install smbus2") from exc
 
 from .exceptions import I2CError
 
@@ -38,32 +36,32 @@ _BL = 0x08  # Backlight
 # ---------------------------------------------------------------------------
 # HD44780 command bytes
 # ---------------------------------------------------------------------------
-_CMD_CLEAR    = 0x01
-_CMD_HOME     = 0x02
-_CMD_ENTRY    = 0x04
-_CMD_DISPLAY  = 0x08
+_CMD_CLEAR = 0x01
+_CMD_HOME = 0x02
+_CMD_ENTRY = 0x04
+_CMD_DISPLAY = 0x08
 _CMD_FUNCTION = 0x20
-_CMD_DDRAM    = 0x80
+_CMD_DDRAM = 0x80
 
 # Function-set flags
-_F_4BIT  = 0x00
+_F_4BIT = 0x00
 _F_2LINE = 0x08
-_F_5x8   = 0x00
+_F_5x8 = 0x00
 
 # Display-control flags
-_D_ON  = 0x04
+_D_ON = 0x04
 
 # Entry-mode flags
-_E_LEFT      = 0x02
-_E_NO_SHIFT  = 0x00
+_E_LEFT = 0x02
+_E_NO_SHIFT = 0x00
 
 # Timing (seconds) — kept conservative for 3.3 V / 5 V compatibility
-_DELAY_POWER_ON  = 0.05
+_DELAY_POWER_ON = 0.05
 _DELAY_INIT_LONG = 0.0045
-_DELAY_INIT_STD  = 0.00015
-_DELAY_ENABLE    = 0.0005   # EN high
-_DELAY_SETTLE    = 0.0001   # EN low → next nibble
-_DELAY_CLEAR     = 0.002    # clear / home command settle
+_DELAY_INIT_STD = 0.00015
+_DELAY_ENABLE = 0.0005  # EN high
+_DELAY_SETTLE = 0.0001  # EN low → next nibble
+_DELAY_CLEAR = 0.002  # clear / home command settle
 
 
 class PCF8574Driver:

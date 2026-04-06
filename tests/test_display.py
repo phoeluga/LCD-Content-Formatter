@@ -175,8 +175,9 @@ class TestScrollFrameNoScroll:
         lcd, driver = make_lcd(cols=20, rows=4)
         frame = simple_frame([("Hi", "", "")] * 4)  # 4 rows = 1 page
 
-        with patch.object(lcd, "write_frame", wraps=lcd.write_frame) as wf, \
-             patch("lcd_content_formatter.display.time.sleep"):
+        with patch.object(lcd, "write_frame", wraps=lcd.write_frame) as wf, patch(
+            "lcd_content_formatter.display.time.sleep"
+        ):
             lcd.scroll_frame(frame, delay=0)
 
         # maxIterations <= 0 → static write only
@@ -197,8 +198,9 @@ class TestScrollFrameNoScroll:
             calls.append((args, kwargs))
             return original(*args, **kwargs)
 
-        with patch.object(lcd, "write_frame", side_effect=capture), \
-             patch("lcd_content_formatter.display.time.sleep"):
+        with patch.object(lcd, "write_frame", side_effect=capture), patch(
+            "lcd_content_formatter.display.time.sleep"
+        ):
             lcd.scroll_frame(frame, show_first_after_scroll=True, delay=0)
 
         # Last call should be write_frame(frame) — page 1, no _scrolling flag
@@ -218,8 +220,9 @@ class TestScrollFrameNoScroll:
             calls.append((args, kwargs))
             return original(*args, **kwargs)
 
-        with patch.object(lcd, "write_frame", side_effect=capture), \
-             patch("lcd_content_formatter.display.time.sleep"):
+        with patch.object(lcd, "write_frame", side_effect=capture), patch(
+            "lcd_content_formatter.display.time.sleep"
+        ):
             lcd.scroll_frame(frame, show_first_after_scroll=False, delay=0)
 
         # Last call should be a _scrolling=True write, not the "reset" write

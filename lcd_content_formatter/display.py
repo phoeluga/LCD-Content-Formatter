@@ -56,8 +56,7 @@ class HD44780:
     ) -> None:
         if i2c_expander.upper() != "PCF8574":
             raise ValueError(
-                f"Unsupported I2C expander '{i2c_expander}'. "
-                "Currently only 'PCF8574' is supported."
+                f"Unsupported I2C expander '{i2c_expander}'. Currently only 'PCF8574' is supported."
             )
         self._cols = cols
         self._rows = rows
@@ -161,7 +160,7 @@ class HD44780:
         @dataclass
         class _ScrollState:
             padding: str  # Leading blank padding for scroll_in effect
-            pos: int       # Current window offset into the constructed text
+            pos: int  # Current window offset into the constructed text
 
         all_rows = frame.rows()
         tmp_frame = copy.deepcopy(frame)
@@ -171,8 +170,7 @@ class HD44780:
         states: list[_ScrollState] = []
         for row in all_rows:
             if scroll_in and (
-                scroll_if_fit
-                or (len(row.prefix) + len(row.text) + len(row.postfix) > self._cols)
+                scroll_if_fit or (len(row.prefix) + len(row.text) + len(row.postfix) > self._cols)
             ):
                 padding = " " * (self._cols - len(row.prefix))
             else:
@@ -200,24 +198,26 @@ class HD44780:
                     if scroll_if_fit:
                         spaces_left = max(
                             0,
-                            self._cols
-                            - (len(row.prefix) + len(row.text) + len(row.postfix)),
+                            self._cols - (len(row.prefix) + len(row.text) + len(row.postfix)),
                         )
 
                     self._maybe_reset_state(
-                        ri, row, state, tmp_rows, states,
-                        scroll_in, scroll_to_blank, scroll_if_fit, spaces_left,
+                        ri,
+                        row,
+                        state,
+                        tmp_rows,
+                        states,
+                        scroll_in,
+                        scroll_to_blank,
+                        scroll_if_fit,
+                        spaces_left,
                     )
 
                     # Build the text window and advance the scroll position
                     window_text = (
-                        state.padding
-                        + row.text
-                        + row.postfix
-                        + state.padding
-                        + " " * spaces_left
+                        state.padding + row.text + row.postfix + state.padding + " " * spaces_left
                     )
-                    tmp_rows[ri].text = window_text[state.pos: state.pos + self._cols]
+                    tmp_rows[ri].text = window_text[state.pos : state.pos + self._cols]
 
                     should_advance = scroll_if_fit and (scroll_in or scroll_to_blank)
                     if not should_advance:
@@ -240,7 +240,9 @@ class HD44780:
     # Backward-compatible aliases (v1 API)
     # ------------------------------------------------------------------
 
-    def writeFrame(self, framebuffer: Frame, pageNumber: int = 1, scrollingFrame: bool = False) -> None:
+    def writeFrame(
+        self, framebuffer: Frame, pageNumber: int = 1, scrollingFrame: bool = False
+    ) -> None:
         """Deprecated alias for :meth:`write_frame`."""
         return self.write_frame(framebuffer, pageNumber, scrollingFrame)
 
@@ -279,14 +281,12 @@ class HD44780:
                 )
             else:
                 return max(
-                    len(all_rows[ri].text) + len(all_rows[ri].postfix) + 1
-                    for ri in page_range
+                    len(all_rows[ri].text) + len(all_rows[ri].postfix) + 1 for ri in page_range
                 )
         else:
             if scroll_to_blank:
                 return max(
-                    len(all_rows[ri].text) + len(all_rows[ri].postfix) + 1
-                    for ri in page_range
+                    len(all_rows[ri].text) + len(all_rows[ri].postfix) + 1 for ri in page_range
                 )
             else:
                 return max(
