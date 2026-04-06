@@ -17,7 +17,7 @@ from .display import HD44780
 from .exceptions import DuplicateFrameRowError, FrameRowNotFoundError, I2CError, LCDError
 from .frame import Frame, FrameRow
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 __all__ = [
     "HD44780",
     "Frame",

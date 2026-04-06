@@ -15,6 +15,17 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.0.1] — 2026-04-06
+
+### Fixed
+- Resolved ruff lint errors: replaced deprecated `typing.List` / `typing.Dict` with built-in generics (`list`, `dict`), removed unused imports (`I2CError` in `display.py`, `field` in `frame.py`), removed quoted return type annotation in `HD44780.__enter__`
+- Applied ruff auto-formatter to bring all source files to consistent style
+
+### Added
+- `workflow_dispatch` trigger added to the CI workflow so it can be re-run manually from the GitHub Actions UI
+
+---
+
 ## [2.0.0] — 2026-04-05
 
 Complete rewrite with proper Python packaging and no RPLCD dependency.
@@ -63,7 +74,8 @@ Initial release.
 
 ---
 
-[Unreleased]: https://github.com/rednoid/LCD-Content-Formatter/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/rednoid/LCD-Content-Formatter/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/rednoid/LCD-Content-Formatter/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/rednoid/LCD-Content-Formatter/compare/v1.0.2103.0601...v2.0.0
 [1.0.2103.0601]: https://github.com/rednoid/LCD-Content-Formatter/compare/v1.0.2103.0401...v1.0.2103.0601
 [1.0.2103.0401]: https://github.com/rednoid/LCD-Content-Formatter/compare/v1.0.2102.1401...v1.0.2103.0401
