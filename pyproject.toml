@@ -1,0 +1,81 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lcd-content-formatter"
+version = "2.0.0"
+description = "Format and display content on HD44780 LCDs with scrolling, pagination, and frame-based management — no RPLCD dependency"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.7"
+keywords = ["lcd", "hd44780", "i2c", "raspberry-pi", "pcf8574", "display", "embedded"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Hardware",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "smbus2>=0.4.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+]
+
+[project.urls]
+Homepage      = "https://github.com/rednoid/LCD-Content-Formatter"
+Repository    = "https://github.com/rednoid/LCD-Content-Formatter"
+Changelog     = "https://github.com/rednoid/LCD-Content-Formatter/blob/main/CHANGELOG.md"
+"Bug Tracker" = "https://github.com/rednoid/LCD-Content-Formatter/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["lcd_content_formatter"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "lcd_content_formatter/",
+    "tests/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "pyproject.toml",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff (linter + formatter)
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py37"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]  # line length handled by formatter
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "--tb=short -q"
+
+[tool.coverage.run]
+source = ["lcd_content_formatter"]
+omit   = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true

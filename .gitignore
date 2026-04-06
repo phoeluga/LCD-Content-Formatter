@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.private/
+
+# >>> p-sync >>>
+CLAUDE.md
+RELEASING.md
+# <<< p-sync <<<

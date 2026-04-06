@@ -1,213 +1,364 @@
 # LCD-Content-Formatter
-[![Version badge][version-badge]][changelog-link]
-[![Changelog badge][changelog-badge]][changelog-link]
-[![Release badge][release-badge]][repo-link]
-[![Python badge][python-badge]][repo-link]
-[![Issues badge][issues-badge]][issues-link]
-[![License badge][license-badge]][license-link]
 
-With this extension you can easily display and scroll any text on your LCD without worrying about the text length or the number of lines. Also it is possible to create a constant prefix and postfix to make data display easy and fast.
+[![PyPI version](https://img.shields.io/pypi/v/lcd-content-formatter)](https://pypi.org/project/lcd-content-formatter/)
+[![CI](https://github.com/rednoid/LCD-Content-Formatter/actions/workflows/ci.yml/badge.svg)](https://github.com/rednoid/LCD-Content-Formatter/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/pypi/pyversions/lcd-content-formatter)](https://pypi.org/project/lcd-content-formatter/)
+[![License](https://img.shields.io/github/license/rednoid/LCD-Content-Formatter)](LICENSE)
+[![Changelog](https://img.shields.io/badge/changelog-main-informational)](CHANGELOG.md)
 
-This small library extends [RPLCD](https://github.com/dbrgn/RPLCD) with the following functions:
-
-- Scrolling text
-- Pagination
-- Prefix
-- Postfix
-- Structuring
-
-## Preface
-This extension was created based on another project which implements the use of a HD44780 LCD. The idea was to make it easy to use an LCD without having to take formatting into account.  
-The display was connected to a Raspberry Pi via an I2C extender.  
-The parent project is used, among other things, to display photovoltaic data. The following demonstrates the result of using this extension module in the parent project.
+Format and display content on **HD44780 LCDs** (1602 / 2004) with scrolling, automatic pagination, and fixed prefix/postfix labels — all without the RPLCD dependency.
 
 <p align="center">
-	<img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/PhotovoltaicSampleLCD.gif?raw=true" width="80%"/>
+  <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/PhotovoltaicSampleLCD.gif" width="80%"/>
 </p>
 
-## Prerequisites
-The following requirements must be met in software and hardware.
+---
 
-### Software
-- Python version >= 3.7
-- RPLCD library from *dbrgn* ([https://github.com/dbrgn/RPLCD](https://github.com/dbrgn/RPLCD))  
-Can be installed via PIP ([https://pypi.org/project/RPLCD](https://pypi.org/project/RPLCD))
+## Features
 
-### Hardware
-- LCD HD44780 - 2004 or 1602
-- I2C extender for HD44780
-- Raspberry Pi or other device capable of addressing the I2C display, depending on the required software prerequisites
+- **Frame-based API** — group rows into a `Frame`; the library handles page breaks automatically
+- **Horizontal scrolling** — scroll in, scroll to blank, or scroll only when text overflows
+- **Prefix / postfix** — keep static labels (e.g. `"Temp: "`, `" °C"`) separate from the changing value
+- **Zero RPLCD dependency** — talks directly to the PCF8574 I2C expander via `smbus2`
+- **Context-manager support** — `with HD44780(...) as lcd:` closes the I2C bus on exit
+- **Backward-compatible** — v1 method names (`scrollFrame`, `addWithGuid`, …) still work
 
-The I2C expander can be connected as follows using a Rasbperry Pi as an example:  
+---
 
-<p align="center">
-	<img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/WiringI2cLcdRasbPi.png?raw=true" width="80%"/>
-</p>
+## Requirements
+
+| Requirement | Version |
+|-------------|---------|
+| Python      | ≥ 3.7   |
+| smbus2      | ≥ 0.4.1 |
+| Hardware    | HD44780 LCD (1602 or 2004) + PCF8574 I2C expander |
+| OS          | Linux with I2C enabled (e.g. Raspberry Pi OS) |
+
+---
+
+## Installation
+
+```bash
+pip install lcd-content-formatter
+```
+
+### Enable I2C on Raspberry Pi
+
+```bash
+sudo raspi-config          # Interfacing Options → I2C → Enable
+sudo reboot
+i2cdetect -y 1             # confirm your display address (commonly 0x27 or 0x3F)
+```
+
+---
+
+## Quick start
+
+```python
+from lcd_content_formatter import HD44780
+
+with HD44780("PCF8574", 0x27, cols=20, rows=4) as lcd:
+    frame = lcd.Frame()
+
+    # Rows with static prefix and postfix
+    row_temp = frame.add("temp",  "-",  prefix="Temp:  ", postfix=" °C")
+    row_hum  = frame.add("hum",   "-",  prefix="Hum:   ", postfix=" %")
+    row_time = frame.add("time",  "-",  prefix="Time:  ")
+    row_date = frame.add("date",  "-",  prefix="Date:  ")
+
+    import time
+    from datetime import date, datetime
+
+    while True:
+        row_temp.text = "23.5"
+        row_hum.text  = "61"
+        row_time.text = datetime.now().strftime("%H:%M:%S")
+        row_date.text = str(date.today())
+
+        for row in (row_temp, row_hum, row_time, row_date):
+            frame.update_row(row)
+
+        lcd.scroll_frame(frame)
+        time.sleep(1)
+```
+
+---
 
 ## Concept
-The following figure illustrates the concept of this library extension using the example of a 2004 HD44780 LCD.
+
+The following diagram illustrates how content is organised for a 20×4 display. The same model applies to 16×2 displays — only the physical dimensions change.
 
 <p align="center">
-	<img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/HD44780_Concept.png?raw=true" width="80%"/>
+  <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/HD44780_Concept.png?raw=true" width="80%"/>
 </p>
 
 ### Frame
-A frame is used to hold the information to be displayed.
-The frame consists of frame rows. The maximum number of frame rows that a frame can show depends on the number that the hardware - HD44780 Display - can display. In this example, four.
+
+A **Frame** is a container that holds an ordered list of Frame Rows. When a Frame is passed to `scroll_frame()` or `write_frame()`, the library groups its rows into pages automatically — there is no manual page management.
 
 ### Page
-If there are more rows than the frame can display, the library manages this by automatically grouping the rows into pages. In the example above, there are eight frame rows, so two pages.
 
-### Frame row
-A frame row contains the actual information and texts that are shown on the display. The frame row consists of four parts:
+When the number of Frame Rows exceeds the physical display height (e.g. 8 rows on a 4-row display), the library splits them into **Pages**. `scroll_frame()` iterates through every page in sequence.
 
-- **ID**  
-Each frame row gets its own ID, which you can easily address and whose values can be changed according to your needs.
-The ID can be configured optionally. If an ID is not needed for the row, you do not have to specify one. In this case a random GUID will be taken.
+### Frame Row
 
-- **Prefix**  
-Displays, like the one above, are often used to show data like sensor values, etc. The prefix allows you to keep a constant text like *"Temp. "* - for temperature - in front of your current value. You then only need to change the temperature value and not the whole line.  
-(This field is optional and need not be used if it is not needed)
+Each **Frame Row** maps to one line on the display and has four parts:
 
-- **Text**  
-This is the actual value you want to show on the display.
+| Part | Required | Description |
+|------|----------|-------------|
+| `id` | optional | Unique key used to retrieve and update the row later. Omit with `add_with_guid()` for static rows. |
+| `prefix` | optional | Static label before the value — e.g. `"Temp: "`. Never scrolls. |
+| `text` | yes | The dynamic value you update at runtime — e.g. `"23.5"`. This is the part that scrolls when it overflows. |
+| `postfix` | optional | Static label after the value — e.g. `" °C"`. Included in the scrolling window. |
 
-- **Postfix**  
-The postfix allows you to put a constant text like "*°C "* - for temperature - directly after your current value. You then only need to change the temperature value and not the whole line.  
-(This field is optional and need not be used if it is not needed)
+The display renders each row as: `prefix + text + postfix`, padded or truncated to the column width.
 
-## Usage
-1. Install the required libraries from Software Prerequisites.
-2. Download this repository and extract it.
-3. Copy the module `HD44780.py` to your project
-4. Import the module:  
-    ```python
-    from HD44780 import HD44780
-    ```
-5. Instantiate the class (Sample with a HD44780 2004 LCD - 20 columns / 4 rows):  
-    ```python
-    lcd = HD44780("PCF8574", 0x27, 20, 4)
-    ```
-6. Create a frame:
-    ```python
-    sampleFrame = lcd.Frame()
-    ```
-7. Create frame row/s:
-    ```python
-    sampleFrameRowDate = sampleFrame.addWithGuid("-", "Date: ")
-    sampleFrameRowTime = sampleFrame.addWithGuid("-", "Time: ")
-    ```
-8. Show the frame on the display:
-    ```python
-    lcd.scrollFrame(sampleFrame)
-    ```
+```
+┌────────────────────┐
+│ Temp:  23.5 °C     │  row 0 — prefix="Temp:  "  text="23.5"  postfix=" °C"
+│ Hum:   61 %        │  row 1 — prefix="Hum:   "  text="61"    postfix=" %"
+│ Time:  14:32:01    │  row 2 — prefix="Time:  "  text="14:32:01"
+│ Date:  2024-06-01  │  row 3 — prefix="Date:  "  text="2024-06-01"
+└────────────────────┘
+         Page 1 of 2
+
+┌────────────────────┐
+│ IP eth0: 192.168.. │  row 4 — long text scrolls left automatically
+│ IP wlan0: UNKNOWN  │  row 5
+│ CPU temp: 52.3 °C  │  row 6
+│                    │  row 7 — empty row pads the last page
+└────────────────────┘
+         Page 2 of 2
+```
+
+---
+
+## API reference
+
+### `HD44780(i2c_expander, address, cols, rows, port=1, backlight=True)`
+
+Main class. Constructor parameters:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `i2c_expander` | `str` | Expander type — `"PCF8574"` |
+| `address` | `int` | I2C address, e.g. `0x27` |
+| `cols` | `int` | Number of display columns (16 or 20) |
+| `rows` | `int` | Number of display rows (2 or 4) |
+| `port` | `int` | I2C bus number (default `1`) |
+| `backlight` | `bool` | Backlight state at startup |
+
+---
+
+#### `lcd.Frame()`
+
+Create a new, empty `Frame` object (also importable as `from lcd_content_formatter import Frame`).
+
+---
+
+#### `frame.add(id, text="", prefix="", postfix="") → FrameRow`
+
+Add a row with an explicit string ID. Raises `DuplicateFrameRowError` if the ID already exists.
+
+#### `frame.add_with_guid(text="", prefix="", postfix="") → FrameRow`
+
+Add a row with an auto-generated UUID as the ID. Use this for static labels that are never updated by ID.
+
+#### `frame.get_row(id, create_if_missing=True) → FrameRow`
+
+Retrieve a row by ID. Creates an empty row when `create_if_missing=True` (default).
+
+#### `frame.update_row(row: FrameRow)`
+
+Replace the stored row whose `id` matches `row.id` with the updated object.
+
+#### `frame.remove(id)`
+
+Remove a row by ID. Raises `FrameRowNotFoundError` if not found.
+
+#### `frame.clear()`
+
+Remove all rows from the frame.
+
+---
+
+#### `lcd.write_frame(frame, page=1)`
+
+Render a single page of *frame* to the display. No scrolling — use `scroll_frame` for animations.
+
+---
+
+#### `lcd.scroll_frame(frame, scroll_in=False, scroll_to_blank=False, scroll_if_fit=False, delay=0.5, show_first_after_scroll=True)`
+
+Display *frame* with optional horizontal scrolling.
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `scroll_in` | `False` | Text enters from the right edge |
+| `scroll_to_blank` | `False` | Text scrolls fully off the left before the next page |
+| `scroll_if_fit` | `False` | Animate even rows that fit without scrolling |
+| `delay` | `0.5` | Seconds between scroll steps (controls speed) |
+| `show_first_after_scroll` | `True` | Reset display to page 1 after all pages finish |
+
+Scroll mode combinations:
+
+| `scroll_in` | `scroll_to_blank` | Effect |
+|-------------|-------------------|--------|
+| `False` | `False` | Standard — scrolls left until end of text is visible, then pauses |
+| `True` | `False` | Text enters from the right, stops when fully visible |
+| `False` | `True` | Text scrolls left until completely off screen |
+| `True` | `True` | Text enters from the right and exits to the left |
+
+---
+
+#### `lcd.close()`
+
+Release the I2C bus. Called automatically when used as a context manager.
+
+---
+
+### `FrameRow` attributes
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `id` | `str` | Unique identifier |
+| `text` | `str` | Dynamic value (the part that changes) |
+| `prefix` | `str` | Static label shown before `text` |
+| `postfix` | `str` | Static label shown after `text` |
+| `full_text` | `str` | Read-only: `prefix + text + postfix` |
+
+---
+
+### Exceptions
+
+| Exception | Inherits | Raised when |
+|-----------|----------|-------------|
+| `LCDError` | `Exception` | Base class |
+| `FrameRowNotFoundError` | `LCDError`, `KeyError` | Row ID not found in frame |
+| `DuplicateFrameRowError` | `LCDError`, `ValueError` | Row ID already exists |
+| `I2CError` | `LCDError`, `OSError` | I2C bus communication failure |
+
+---
+
+## Migration from v1
+
+v2 removes the RPLCD dependency. The main changes are:
+
+| v1 | v2 |
+|----|-----|
+| `pip install RPLCD` | `pip install smbus2` (done automatically) |
+| `from HD44780 import HD44780` | `from lcd_content_formatter import HD44780` |
+| `lcd.Frame()` | unchanged |
+| `frame.addWithGuid(...)` | `frame.add_with_guid(...)` (old name still works) |
+| `frame.getFrame(id)` | `frame.get_row(id)` (old name still works) |
+| `lcd.scrollFrame(...)` | `lcd.scroll_frame(...)` (old name still works) |
+| Constructor: `HD44780(expander, addr, cols, rows)` | same, positional order unchanged |
+
+All v1 method names are kept as deprecated aliases so existing scripts continue to run.
+
+---
+
+## Wiring
+
+Connect the PCF8574 I2C expander to your Raspberry Pi as shown below:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/WiringI2cLcdRasbPi.png" width="70%"/>
+</p>
+
+The default PCF8574 pin mapping assumed by this library:
+
+| PCF8574 pin | HD44780 pin | Function |
+|-------------|-------------|----------|
+| P0 | RS | Register Select |
+| P1 | RW | Read/Write (always write) |
+| P2 | EN | Enable |
+| P3 | — | Backlight |
+| P4–P7 | D4–D7 | 4-bit data bus |
+
+---
 
 ## Sample
-Find a detailed sample script in the folder `sample` of this repository.
-You should be able to run it from scratch with just adapting the LCD I2C settings in the `config.py` file.
 
-* Example of a standard scrolling text  
-    <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/SampleStandard.gif?raw=true" width="80%"/>
-* Example of a text scrolling in  
-    <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/SampleScrollIn.gif?raw=true" width="80%"/>
-* Example of a text scrolling in and out  
-    <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/SampleScrollInScrollOut.gif?raw=true" width="80%"/>
+A runnable demo is in the [`sample/`](sample/) directory. It shows IP addresses, CPU temperature, a counter, date, time, and a long scrolling text across two pages on a 20×4 display.
 
-## API Reference
-The interfaces for integration in your own code are described below.
+Scroll animation examples:
 
-### Classes
-* `HD44780(CharLCD)`  
-    This is the main class that inherits `RPLCD.i2c CharLCD` from [RPLCD](https://github.com/dbrgn/RPLCD)
+* Standard scrolling text
+  <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/SampleStandard.gif" width="80%"/>
+* Text scrolling in (`scroll_in=True`)
+  <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/SampleScrollIn.gif" width="80%"/>
+* Text scrolling in and out (`scroll_in=True, scroll_to_blank=True`)
+  <img src="https://raw.githubusercontent.com/rednoid/LCD-Content-Formatter/docu/images/SampleScrollInScrollOut.gif" width="80%"/>
 
-    #### Public functions:
-    * `__init__(i2c_expander, address, cols, rows, dotsize=8, expander_params=None, port=1, charmap='A00', linebreaks=True, backlight=True)`  
+### 1. Configure your hardware
 
-        The constructor of this module passes the provided parameters to the parent class `RPLCD.i2c CharLCD` from the [RPLCD](https://github.com/dbrgn/RPLCD) library. The parameters of the I2C expander (`i2c_expander`), the I2C address of the expander (`address`) and the number of columns (`cols`) and rows (`rows`) of the physical display must be provided. All other parameters are optional and have the default value of the parent `RPLCD.i2c CharLCD` class.  
+Edit [`sample/config.py`](sample/config.py):
 
-    * `writeFrame(framebuffer, pageNumber=1, scrollingFrame=False)`  
+```python
+lcd_i2c_expander_type = "PCF8574"
+lcd_i2c_address = 0x27   # use i2cdetect -y 1 to find your address
+lcd_column_count = 20
+lcd_row_count    = 4
+```
 
-        Shows the specified frame as `framebuffer` on the display. If the number of frame rows is larger than the number of rows the display can show, pages are automatically created in the background. The page to be displayed can be specified by the parameter `pageNumber`.  
-        The parameter `scrollingFrame` is only needed in the combination by the call through the function `scrollFrame`. Otherwise it must always be False for a correct output.  
-		This function only displays the content of a frame and does not include a scrolling feature. For this, the function `scrollFrame` must be called.  
+### 2. Run
 
-    * `scrollFrame(framebuffer, scrollIn=False, scrollToBlank=False, scrollIfFit=False, delay=0.5, showFirstFrameAfterScroll=True)`  
-  
-	    This is the main function that should be used to display the frame content provided in the frame as `framebuffer` on the LCD.  
-		The remaining parameters provide the following functionality:  
-        * `scrollIn`  
-		    If `True`, the text is scrolled in from the right side of the LCD. Otherwise, the beginning of the text is displayed before scrolling starts.  
+```bash
+python sample/sample.py
+```
 
-		* `scrollToBlank`  
-		    If `True`, the text is scrolled out to the left until it is no longer visible. Otherwise, the scrolling stops as soon as the text is completely displayed.  
+### 3. Sample code
 
-		* `scrollIfFit`  
-		    Specifies whether the text should be scrolled by the parameters `scrollIn` and `scrollToBlank` if the text can also be displayed completely in the LCD row without scrolling.  
+```python
+from lcd_content_formatter import HD44780
+import config
+import sample_functions
+import time
+from datetime import date, datetime
 
-		* `delay`  
-		    Specifies the time in seconds to wait between scrolling and before displaying the inserted characters. Defines the scrolling speed.  
+with HD44780(
+    config.lcd_i2c_expander_type,
+    config.lcd_i2c_address,
+    cols=config.lcd_column_count,
+    rows=config.lcd_row_count,
+) as lcd:
+    frame = lcd.Frame()
 
-		* `showFirstFrameAfterScroll`  
-		    Specifies whether the display should be reset to the output - before/at the start of scrolling - when the function is ended.
-		    
+    # Rows with explicit IDs — updated in the loop by reference
+    row_ip_eth0  = frame.add("ip_eth0",  "-", prefix="IP eth0:  ")
+    row_ip_wlan0 = frame.add("ip_wlan0", "-", prefix="IP wlan0: ")
+    row_temp     = frame.add("cpu_temp", "-", prefix="CPU temp: ", postfix=" °C")
+    row_counter  = frame.add("counter",  "-", prefix="Count: ",   postfix=" iter.")
 
-* `Frame()`  
+    # These rows push the frame beyond 4 rows → page 2 is created automatically
+    row_date = frame.add_with_guid("-", prefix="Date: ")
+    row_time = frame.add_with_guid("-", prefix="Time: ")
+    row_long = frame.add_with_guid("Lorem ipsum dolor sit amet!", prefix="Text: ")
 
-    Instantiate this class for getting a object that represents a frame that holds the frame rows. 
+    while True:
+        row_ip_eth0.text  = sample_functions.get_ip_address("eth0")
+        row_ip_wlan0.text = sample_functions.get_ip_address("wlan0")
+        row_temp.text     = str(sample_functions.get_cpu_temperature())
+        row_counter.text  = str(config.sample_counter)
+        row_date.text     = str(date.today())
+        row_time.text     = datetime.now().strftime("%H:%M:%S")
 
-    #### Classes
-    * `FrameRow`  
-        This is a structure that that have the following attributes as String:
-        * `id`
-        * `text`
-        * `prefix`
-        * `postfix`
+        for row in (row_ip_eth0, row_ip_wlan0, row_temp, row_counter, row_date, row_time):
+            frame.update_row(row)
 
-    #### Public functions:  
-    * `add(id, text="", prefix="", postfix="")`  
+        # Change scroll_in / scroll_to_blank / scroll_if_fit to try different animations
+        lcd.scroll_frame(frame, scroll_in=False, scroll_to_blank=False)
 
-        Adds a frame row with a specific `id` to the parent frame. All other fields are optional to allow you to provide a blank frame row.  
+        config.sample_counter += 1
+```
 
-    * `addWithGuid(text, prefix="", postfix="")`  
-
-        Adds a frame row  to the parent frame without the need to specific `id`. In case a frame row does not need to be addressed by an ID, then this function can be used, which uses a generated GUID as a reference in the background.  
-
-    * `getFrame(id, createEmptyRowIfIdNotExist=True)`  
-
-        Returns a frame row requested by the `id` parameter. If the requested `id` is not found in the parent frame, it can be created if the `createEmptyRowIfIdNotExist` parameter is specified as `True`.  
-
-    * `removeByIndex(id)`  
-
-        This function  
-
-    * `clear()`  
-
-        This function clears all attributes to an empty string except the `id`  
-
-    * `updateFrameRow(frameRow)`  
-
-        This function will update the provided frame row in the parent frame. 
-
+---
 
 ## Changelog
-All changes to this project are described in the [CHANGELOG.md][changelog-link].
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
-This code is licensed under the license specified in the [LICENSE][license-link] file.
 
-
-[version-badge]: https://img.shields.io/badge/version-1.0.2103.0601-brightgreen
-
-[changelog-link]: ./CHANGELOG.md
-[changelog-badge]: https://img.shields.io/badge/changelog-main-informational
-
-[release-badge]: https://img.shields.io/badge/release-stable-orange
-
-[python-badge]: https://img.shields.io/badge/python-%3E=v3.7-blue
-
-[license-link]: ./LICENSE
-[license-badge]: https://img.shields.io/github/license/rednoid/LCD-Content-Formatter
-
-[repo-link]: https://github.com/rednoid/LCD-Content-Formatter
-[issues-link]: https://github.com/rednoid/LCD-Content-Formatter/issues
-[issues-badge]: https://img.shields.io/github/issues/rednoid/LCD-Content-Formatter
+[MIT](LICENSE) © 2021-2026 Phoeluga
