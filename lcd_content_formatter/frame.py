@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
-from typing import Dict, Iterator, List, Optional
+from dataclasses import dataclass
+from typing import Iterator
 
 from .exceptions import DuplicateFrameRowError, FrameRowNotFoundError
 
@@ -38,7 +38,7 @@ class Frame:
     """
 
     def __init__(self) -> None:
-        self._rows: Dict[str, FrameRow] = {}
+        self._rows: dict[str, FrameRow] = {}
 
     def __len__(self) -> int:
         return len(self._rows)
@@ -142,7 +142,7 @@ class Frame:
         """Remove all rows from this frame."""
         self._rows.clear()
 
-    def rows(self) -> List[FrameRow]:
+    def rows(self) -> list[FrameRow]:
         """Return all rows as an ordered list."""
         return list(self._rows.values())
 

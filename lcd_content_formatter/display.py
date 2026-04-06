@@ -5,10 +5,8 @@ from __future__ import annotations
 import copy
 import time
 from dataclasses import dataclass
-from typing import List
 
 from ._driver import PCF8574Driver
-from .exceptions import I2CError
 from .frame import Frame, FrameRow
 
 
@@ -74,7 +72,7 @@ class HD44780:
         """Release the I2C bus. Call when finished with the display."""
         self._driver.close()
 
-    def __enter__(self) -> "HD44780":
+    def __enter__(self) -> HD44780:
         return self
 
     def __exit__(self, *_) -> None:
@@ -170,7 +168,7 @@ class HD44780:
         tmp_rows = tmp_frame.rows()
 
         # Pre-compute per-row padding (only relevant for scroll_in)
-        states: List[_ScrollState] = []
+        states: list[_ScrollState] = []
         for row in all_rows:
             if scroll_in and (
                 scroll_if_fit

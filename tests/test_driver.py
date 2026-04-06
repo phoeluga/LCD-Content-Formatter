@@ -4,18 +4,14 @@ All I2C hardware calls are replaced by a MagicMock, so these tests run on
 any platform without physical hardware.
 """
 
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from lcd_content_formatter._driver import (
-    PCF8574Driver,
     _BL,
-    _CMD_CLEAR,
-    _CMD_DDRAM,
-    _CMD_HOME,
-    _EN,
     _RS,
+    PCF8574Driver,
 )
 from lcd_content_formatter.exceptions import I2CError
 

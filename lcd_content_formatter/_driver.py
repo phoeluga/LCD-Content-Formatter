@@ -17,7 +17,6 @@ PCF8574 → HD44780 pin mapping (standard wiring):
 from __future__ import annotations
 
 import time
-from typing import List
 
 try:
     from smbus2 import SMBus
@@ -94,7 +93,7 @@ class PCF8574Driver:
             self._bus = SMBus(port)
         except OSError as exc:
             raise I2CError(f"Cannot open I2C bus {port}: {exc}") from exc
-        self._row_offsets: List[int] = [
+        self._row_offsets: list[int] = [
             0x00,
             0x40,
             cols,

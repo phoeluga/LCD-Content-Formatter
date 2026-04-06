@@ -5,13 +5,12 @@ row rendering logic, and scroll-state management.
 """
 
 from dataclasses import dataclass
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from lcd_content_formatter.display import HD44780
-from lcd_content_formatter.frame import Frame, FrameRow
-
+from lcd_content_formatter.frame import Frame
 
 # ---------------------------------------------------------------------------
 # Helpers

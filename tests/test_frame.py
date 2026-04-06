@@ -5,7 +5,6 @@ import pytest
 from lcd_content_formatter.exceptions import DuplicateFrameRowError, FrameRowNotFoundError
 from lcd_content_formatter.frame import Frame, FrameRow
 
-
 # ---------------------------------------------------------------------------
 # FrameRow
 # ---------------------------------------------------------------------------
